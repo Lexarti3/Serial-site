@@ -2,29 +2,68 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Open Movies</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header class="header">
-  <h1 class="logo">Open Movies</h1>
-  <nav>
-    <button onclick="loadMovies()">Фильмы</button>
-    <button onclick="loadTV()">Сериалы</button>
-    <button onclick="showFavorites()">⭐ Избранное</button>
-  </nav>
-</header>
+  <!-- HEADER -->
+  <header class="header">
+    <h1 class="logo">Open Movies</h1>
 
-<div class="search">
-  <input id="searchInput" placeholder="Поиск фильмов и сериалов..." />
-</div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="loadMovies()">Фильмы</button>
+      <button class="nav-btn" onclick="loadTV()">Сериалы</button>
+      <button class="nav-btn" onclick="showFavorites()">⭐ Избранное</button>
+    </nav>
+  </header>
 
-<main id="grid" class="grid"></main>
+  <!-- SEARCH -->
+  <div class="search-container">
+    <input
+      type="text"
+      id="search"
+      placeholder="Поиск фильмов и сериалов..."
+      onkeydown="if(event.key==='Enter') search()"
+    />
+  </div>
 
-<footer>Powered by TMDB</footer>
+  <!-- CONTENT -->
+  <main>
+    <div id="grid" class="movies-grid">
+      <!-- Карточки загружаются через JS -->
+    </div>
+  </main>
 
-<script src="app.js"></script>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>Powered by TMDB</p>
+  </footer>
+
+  <!-- 🔥 FIREBASE (ШАГ 2) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6Z-zkxFnOKYvfA6efLHLHkOQ6TdmPD5U",
+      authDomain: "moxse-3b0be.firebaseapp.com",
+      projectId: "moxse-3b0be",
+      storageBucket: "moxse-3b0be.firebasestorage.app",
+      messagingSenderId: "33139757396",
+      appId: "1:33139757396:web:431a112d4e82ab044878c1",
+      measurementId: "G-KX0RFFM9W7"
+    };
+
+    initializeApp(firebaseConfig);
+  </script>
+
+  <!-- MAIN APP -->
+  <script src="app.js"></script>
+
 </body>
 </html>
+
 
