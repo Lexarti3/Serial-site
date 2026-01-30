@@ -3,46 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <title>Open Movies</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Стили -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <h1 class="logo">Open Movies</h1>
+<header class="header">
+  <h1 class="logo">Open Movies</h1>
+  <nav>
+    <button onclick="loadMovies()">Фильмы</button>
+    <button onclick="loadTV()">Сериалы</button>
+    <button onclick="showFavorites()">⭐ Избранное</button>
+  </nav>
+</header>
 
-    <nav class="nav">
-      <button class="nav-btn active" data-type="movie">Фильмы</button>
-      <button class="nav-btn" data-type="tv">Сериалы</button>
-      <button class="nav-btn" data-type="favorites">⭐ Избранное</button>
-    </nav>
-  </header>
+<div class="search">
+  <input id="searchInput" placeholder="Поиск фильмов и сериалов..." />
+</div>
 
-  <!-- SEARCH -->
-  <div class="search-container">
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Поиск фильмов и сериалов..."
-    />
-  </div>
+<main id="grid" class="grid"></main>
 
-  <!-- CONTENT -->
-  <main>
-    <div id="movies" class="movies-grid">
-      <!-- Карточки подгружаются через JS -->
-    </div>
-  </main>
+<footer>Powered by TMDB</footer>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>Powered by TMDB</p>
-  </footer>
-
-  <!-- JS -->
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
+
