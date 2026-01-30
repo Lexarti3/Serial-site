@@ -1,8 +1,9 @@
 const KEY = "326dbfdc8731edbdf825d569a44d4ede";
 const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p/w500";
-const grid = document.getElementById("grid");
+const grid = document.getElementById("movies");
 
+// ===== STORAGE =====
 function save(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
 }
@@ -11,7 +12,6 @@ function load(key) {
 }
 
 // ===== LOADERS =====
-
 async function loadMovies() {
   const r = await fetch(`${API}/movie/popular?api_key=${KEY}&language=ru-RU`);
   const d = await r.json();
@@ -25,7 +25,7 @@ async function loadTV() {
 }
 
 async function search() {
-  const q = document.getElementById("search").value;
+  const q = document.getElementById("searchInput").value;
   if (!q) return;
 
   const r = await fetch(`${API}/search/multi?api_key=${KEY}&query=${q}&language=ru-RU`);
@@ -34,7 +34,6 @@ async function search() {
 }
 
 // ===== RENDER =====
-
 function render(items, forcedType) {
   grid.innerHTML = "";
   items.forEach(i => {
@@ -53,29 +52,14 @@ function render(items, forcedType) {
   });
 }
 
-// ===== FAVORITES =====
-
-function toggleFav(item) {
-  let favs = load("favorites");
-  const exists = favs.find(f => f.id === item.id && f.type === item.type);
-  favs = exists
-    ? favs.filter(f => !(f.id === item.id && f.type === item.type))
-    : [...favs, item];
-  save("favorites", favs);
-}
-
-function showFavorites() {
-  render(load("favorites"), null);
-}
-
 // ===== WATCH =====
-
 function openWatch(item, type) {
   let history = load("history");
   history.unshift({ id: item.id, type, date: Date.now() });
   save("history", history.slice(0, 50));
-
   location.href = `watch.html?id=${item.id}&type=${type}`;
 }
 
-loadMovies();
+// ===== START =====
+document.addEventListener("DOMContentLoaded", loadMovies);
+
