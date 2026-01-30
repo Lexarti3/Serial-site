@@ -1,61 +1,93 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f0f0f;
   color: #fff;
 }
 
 header {
-  background: #000;
+  position: sticky;
+  top: 0;
+  background: #121212;
   padding: 10px;
-  text-align: center;
+  z-index: 10;
+}
+
+h1 {
+  margin: 0 0 10px;
 }
 
 nav button {
-  margin: 5px;
-  padding: 8px 12px;
-  background: #e50914;
-  color: #fff;
+  background: none;
   border: none;
+  color: #fff;
+  margin-right: 10px;
+  font-size: 16px;
   cursor: pointer;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 15px;
-  padding: 20px;
+  gap: 12px;
+  padding: 12px;
 }
 
 .card {
-  background: #222;
-  padding: 10px;
-  text-align: center;
+  background: #1c1c1c;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.03);
 }
 
 .card img {
   width: 100%;
-  border-radius: 5px;
+  height: 220px;
+  object-fit: cover;
 }
-/* ===== Страница фильма ===== */
+
+.card h3 {
+  font-size: 14px;
+  padding: 8px;
+}
+
+.fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,.6);
+  border: none;
+  font-size: 18px;
+  color: gold;
+  cursor: pointer;
+}
 
 .movie-page {
-  padding: 20px;
-}
-
-.movie-page h2 {
-  margin-top: 10px;
-}
-
-.movie-page p {
-  opacity: 0.8;
+  padding: 12px;
 }
 
 .movie-page iframe {
   width: 100%;
   height: 400px;
-  margin-top: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .movie-page button {
@@ -65,4 +97,11 @@ nav button {
   padding: 8px 14px;
   cursor: pointer;
   margin-bottom: 15px;
+  border-radius: 6px;
+}
+
+.loading {
+  padding: 30px;
+  text-align: center;
+  opacity: 0.7;
 }
