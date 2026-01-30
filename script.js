@@ -1,74 +1,84 @@
 const content = document.getElementById("content");
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
-const ALLOWED_KEYWORDS = [
-  "movie",
-  "film",
-  "cinema",
-  "feature",
-  "episode",
-  "series",
-  "season"
+// сколько карточек
+const PER_PAGE = 12;
+
+// ❌ слова, которые вырезаем полностью
+const BLOCK_WORDS = [
+  "news", "cnn", "nbc", "bbc", "radio",
+  "podcast", "episode", "preview",
+  "awards", "talk", "interview",
+  "questioncast", "show", "daily",
+  "reality bites", "in session"
 ];
 
-// ===== ФИЛЬТР — УБИРАЕТ НОВОСТИ И МУСОР =====
-function isValidItem(item) {
+// ✅ слова, которые ОБЯЗАТЕЛЬНО должны быть
+const ALLOW_WORDS = [
+  "film", "movie", "feature",
+  "full movie", "full film",
+  "series", "season", "episode 1"
+];
+
+// ===== ФИЛЬТР КАЧЕСТВА =====
+function isCleanMovie(item) {
   const title = (item.title || "").toLowerCase();
   const desc = (item.description || "").toLowerCase();
 
-  if (title.includes("news")) return false;
-  if (title.includes("cnn")) return false;
-  if (title.includes("nbc")) return false;
-  if (title.includes("broadcast")) return false;
-  if (title.includes("report")) return false;
+  // если есть запрещённые слова — сразу мимо
+  if (BLOCK_WORDS.some(w => title.includes(w) || desc.includes(w))) {
+    return false;
+  }
 
-  return ALLOWED_KEYWORDS.some(k =>
-    title.includes(k) || desc.includes(k)
-  );
+  // должно быть хоть одно разрешённое
+  return ALLOW_WORDS.some(w => title.includes(w) || desc.includes(w));
 }
 
 // ===== ЗАГРУЗКА =====
 async function fetchArchive(query) {
-  content.innerHTML = "Загрузка...";
-  const url = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
-    query
-  )}&fl[]=identifier&fl[]=title&fl[]=description&rows=50&page=1&output=json`;
+  content.innerHTML = "<p class='loading'>Загрузка фильмов…</p>";
+
+  const url =
+    `https://archive.org/advancedsearch.php` +
+    `?q=${encodeURIComponent(query)}` +
+    `&fl[]=identifier&fl[]=title&fl[]=description` +
+    `&rows=${PER_PAGE}&output=json`;
 
   const res = await fetch(url);
   const data = await res.json();
 
-  const items = data.response.docs.filter(isValidItem);
-  renderGrid(items);
+  const clean = data.response.docs.filter(isCleanMovie);
+
+  renderGrid(clean);
 }
 
-// ===== РЕНДЕР КАРТОЧЕК =====
-function renderGrid(items) {
-  content.innerHTML = "";
+// ===== РЕНДЕР =====
+function renderGrid(list) {
+  content.innerHTML = `<div class="grid"></div>`;
+  const grid = content.querySelector(".grid");
 
-  items.forEach(item => {
+  list.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
 
-    const img = document.createElement("img");
-    img.src = `https://archive.org/services/img/${item.identifier}`;
+    card.innerHTML = `
+      <img loading="lazy"
+        src="https://archive.org/services/img/${item.identifier}">
+      <h3>${item.title}</h3>
+      <button class="fav-btn">
+        ${favorites.includes(item.identifier) ? "★" : "☆"}
+      </button>
+    `;
 
-    const title = document.createElement("h3");
-    title.textContent = item.title;
-
-    const fav = document.createElement("button");
-    fav.className = "fav-btn";
-    fav.innerHTML = favorites.includes(item.identifier) ? "★" : "☆";
-
-    fav.onclick = e => {
+    card.querySelector(".fav-btn").onclick = e => {
       e.stopPropagation();
       toggleFavorite(item.identifier);
-      fav.innerHTML = favorites.includes(item.identifier) ? "★" : "☆";
+      e.target.textContent =
+        favorites.includes(item.identifier) ? "★" : "☆";
     };
 
     card.onclick = () => openPlayer(item);
-
-    card.append(img, title, fav);
-    content.appendChild(card);
+    grid.appendChild(card);
   });
 }
 
@@ -76,13 +86,12 @@ function renderGrid(items) {
 function openPlayer(item) {
   content.innerHTML = `
     <div class="movie-page">
-      <button class="back-btn" onclick="loadMovies()">← Назад</button>
+      <button onclick="loadMovies()">← Назад</button>
       <h2>${item.title}</h2>
       <iframe
         src="https://archive.org/embed/${item.identifier}"
-        frameborder="0"
-        allowfullscreen
-      ></iframe>
+        allowfullscreen>
+      </iframe>
     </div>
   `;
 }
@@ -96,32 +105,33 @@ function toggleFavorite(id) {
   localStorage.setItem("favorites", JSON.stringify(favorites));
 }
 
-function showFavorites() {
-  if (!favorites.length) {
-    content.innerHTML = "Избранное пусто ⭐";
-    return;
-  }
-
-  const items = favorites.map(id => ({
-    identifier: id,
-    title: id
-  }));
-
-  renderGrid(items);
-}
-
-// ===== КНОПКИ =====
+// ===== НАВИГАЦИЯ =====
 function loadMovies() {
-  fetchArchive("feature film");
+  fetchArchive("feature film full movie");
 }
 
 function loadSeries() {
-  fetchArchive("tv series");
+  fetchArchive("tv series full episodes");
 }
 
-function search(q) {
-  fetchArchive(q);
+function showFavorites() {
+  if (!favorites.length) {
+    content.innerHTML = "<p class='loading'>Избранное пусто ⭐</p>";
+    return;
+  }
+
+  const favItems = favorites.map(id => ({
+    identifier: id,
+    title: id.replace(/_/g, " ")
+  }));
+
+  renderGrid(favItems);
+}
+
+function archiveSearch(text) {
+  if (text.trim()) fetchArchive(text);
 }
 
 // ===== СТАРТ =====
 loadMovies();
+
