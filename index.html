@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Open Movies</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <header>
   <h1>Open Movies</h1>
 
   <nav>
-    <button onclick="loadFromArchive('movies')">Фильмы</button>
-    <button onclick="loadFromArchive('tv')">Сериалы</button>
+    <button onclick="loadMovies()">Фильмы</button>
+    <button onclick="loadSeries()">Сериалы</button>
     <button onclick="showFavorites()">⭐ Избранное</button>
   </nav>
 
   <input
     type="text"
-    placeholder="Поиск по Archive.org..."
+    placeholder="Поиск фильмов и сериалов…"
     onkeydown="if(event.key==='Enter') archiveSearch(this.value)"
   >
 </header>
@@ -29,3 +30,4 @@
 <script src="script.js"></script>
 </body>
 </html>
+
