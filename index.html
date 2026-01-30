@@ -22,27 +22,29 @@
     }
 
     button {
-      padding: 10px;
-      margin: 5px 0;
+      padding: 12px;
+      margin: 6px 0;
       background: #e50914;
       color: #fff;
       border: none;
       cursor: pointer;
       width: 100%;
+      font-size: 16px;
     }
 
     input {
       width: 100%;
-      padding: 10px;
-      margin: 5px 0;
+      padding: 12px;
+      margin: 6px 0;
+      font-size: 16px;
     }
 
     #auth {
-      max-width: 300px;
+      max-width: 320px;
       margin: 40px auto;
       background: #222;
-      padding: 20px;
-      border-radius: 6px;
+      padding: 24px;
+      border-radius: 8px;
     }
 
     #content {
@@ -58,7 +60,7 @@
 
     .card {
       background: #333;
-      padding: 10px;
+      padding: 16px;
       border-radius: 6px;
       text-align: center;
     }
@@ -68,16 +70,16 @@
 
 <header>
   <h2>🎬 Serial Site</h2>
-  <button id="logoutBtn" onclick="logout()" style="display:none">Выйти</button>
+  <button id="logoutBtn" onclick="logout()" style="display:none;width:auto">Выйти</button>
 </header>
 
 <div id="auth">
   <h3>Вход / Регистрация</h3>
   <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Пароль">
+  <input id="password" type="password" placeholder="Пароль (мин. 6 символов)">
   <button onclick="register()">Регистрация</button>
   <button onclick="login()">Вход</button>
-  <p id="userStatus"></p>
+  <p id="userStatus">Вы не авторизованы</p>
 </div>
 
 <div id="content">
@@ -89,7 +91,6 @@
   </div>
 </div>
 
-<!-- FIREBASE + AUTH -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
   import {
@@ -112,21 +113,29 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const userStatus = document.getElementById("userStatus");
+
   window.register = async () => {
-    const email = email.value;
-    const password = password.value;
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(
+        auth,
+        emailInput.value,
+        passwordInput.value
+      );
     } catch (e) {
       alert(e.message);
     }
   };
 
   window.login = async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(
+        auth,
+        emailInput.value,
+        passwordInput.value
+      );
     } catch (e) {
       alert(e.message);
     }
@@ -140,13 +149,13 @@
     document.getElementById("auth").style.display = user ? "none" : "block";
     document.getElementById("content").style.display = user ? "block" : "none";
     document.getElementById("logoutBtn").style.display = user ? "block" : "none";
-    document.getElementById("userStatus").innerText =
-      user ? "Вы вошли" : "Вы не авторизованы";
+    userStatus.innerText = user ? "Вы вошли" : "Вы не авторизованы";
   });
 </script>
 
 </body>
 </html>
+
 
 
 
