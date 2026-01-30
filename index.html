@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Open Movies</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-</head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <link rel="stylesheet" href="style.css" />
+</head>
 <body>
 
 <header>
@@ -20,14 +20,13 @@
 
   <input
     type="text"
-    placeholder="Поиск фильмов и сериалов…"
-    onkeydown="if(event.key==='Enter') archiveSearch(this.value)"
-  >
+    placeholder="Поиск фильмов и сериалов..."
+    onkeydown="if(event.key==='Enter') search(this.value)"
+  />
 </header>
 
-<main id="content"></main>
+<main id="content" class="grid"></main>
 
 <script src="script.js"></script>
 </body>
 </html>
-
