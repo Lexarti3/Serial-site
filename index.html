@@ -60,6 +60,7 @@
       background: #333;
       padding: 10px;
       border-radius: 6px;
+      text-align: center;
     }
   </style>
 </head>
@@ -67,7 +68,7 @@
 
 <header>
   <h2>🎬 Serial Site</h2>
-  <button onclick="logout()">Выйти</button>
+  <button id="logoutBtn" onclick="logout()" style="display:none">Выйти</button>
 </header>
 
 <div id="auth">
@@ -88,10 +89,16 @@
   </div>
 </div>
 
-<!-- FIREBASE -->
+<!-- FIREBASE + AUTH -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB6Z-zkxFnOKYvfA6efLHLHkOQ6TdmPD5U",
@@ -102,22 +109,45 @@
     appId: "1:33139757396:web:431a112d4e82ab044878c1"
   };
 
-  window.app = initializeApp(firebaseConfig);
-  window.auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.register = async () => {
+    const email = email.value;
+    const password = password.value;
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  window.login = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  window.logout = async () => {
+    await signOut(auth);
+  };
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById("auth").style.display = user ? "none" : "block";
     document.getElementById("content").style.display = user ? "block" : "none";
+    document.getElementById("logoutBtn").style.display = user ? "block" : "none";
     document.getElementById("userStatus").innerText =
       user ? "Вы вошли" : "Вы не авторизованы";
   });
 </script>
 
-<!-- AUTH LOGIC -->
-<script type="module" src="auth.js"></script>
-
 </body>
 </html>
+
 
 
 
