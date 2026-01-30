@@ -1,6 +1,6 @@
-// ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
-let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+// ===== СОСТОЯНИЕ =====
 let movies = [];
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let currentPage = 1;
 let currentQuery = "movies";
 const perPage = 12;
@@ -38,21 +38,19 @@ function renderMovies(list, append = false) {
   });
 }
 
-// ===== СТРАНИЦА ФИЛЬМА =====
+// ===== СТРАНИЦА ФИЛЬМА / СЕРИАЛА =====
 function openMovie(id) {
   const movie = movies.find(m => m.id === id);
   const content = document.getElementById("content");
 
   content.innerHTML = `
     <div class="movie-page">
-      <button onclick="loadFromArchive(currentQuery, currentPage)">← Назад</button>
+      <button onclick="renderMovies(movies)">← Назад</button>
       <h2>${movie.name}</h2>
       <p>${movie.description}</p>
 
-      <iframe 
+      <iframe
         src="${movie.video}"
-        width="100%"
-        height="400"
         frameborder="0"
         allowfullscreen>
       </iframe>
@@ -61,28 +59,34 @@ function openMovie(id) {
 }
 
 // ===== ЗАГРУЗКА С ARCHIVE.ORG =====
-async function loadFromArchive(query = "movies", page = 1) {
+async function loadFromArchive(type = "movies", page = 1) {
   if (isLoading) return;
   isLoading = true;
 
   const content = document.getElementById("content");
 
   if (page === 1) {
-    content.innerHTML = "<p class='loading'>Загрузка фильмов...</p>";
+    content.innerHTML = "<p class='loading'>Загрузка...</p>";
     movies = [];
   }
 
-  currentQuery = query;
+  currentQuery = type;
   currentPage = page;
 
   const start = (page - 1) * perPage;
 
+  // 🔥 РАЗЛИЧИЕ ФИЛЬМЫ / СЕРИАЛЫ
+  let searchQuery;
+  if (type === "tv") {
+    searchQuery = "collection:(television)";
+  } else {
+    searchQuery = "mediatype:(movies)";
+  }
+
   const url =
     "https://archive.org/advancedsearch.php" +
-    "?q=mediatype:(movies)%20AND%20" + query +
-    "&fl[]=identifier" +
-    "&fl[]=title" +
-    "&fl[]=description" +
+    "?q=" + searchQuery +
+    "&fl[]=identifier&fl[]=title&fl[]=description" +
     "&rows=" + perPage +
     "&start=" + start +
     "&output=json";
@@ -90,21 +94,17 @@ async function loadFromArchive(query = "movies", page = 1) {
   const res = await fetch(url);
   const data = await res.json();
 
-  const newMovies = [];
-
-  data.response.docs.forEach((item, index) => {
-    newMovies.push({
-      id: movies.length + index + 1,
+  data.response.docs.forEach((item) => {
+    movies.push({
+      id: movies.length + 1,
       name: item.title,
       poster: "https://archive.org/services/img/" + item.identifier,
-      description: item.description || "Public domain movie",
+      description: item.description || "Public domain content",
       video: "https://archive.org/embed/" + item.identifier
     });
   });
 
-  movies = movies.concat(newMovies);
-  renderMovies(newMovies, page !== 1);
-
+  renderMovies(movies, page !== 1);
   isLoading = false;
 }
 
@@ -136,7 +136,7 @@ function showFavorites() {
 // ===== ПОИСК =====
 function archiveSearch(text) {
   if (!text.trim()) return;
-  loadFromArchive(text, 1);
+  loadFromArchive(currentQuery, 1);
 }
 
 // ===== INFINITE SCROLL =====
@@ -149,4 +149,5 @@ window.addEventListener("scroll", () => {
 });
 
 // ===== СТАРТ =====
-loadFromArchive();
+loadFromArchive("movies");
+
