@@ -37,3 +37,32 @@ nav button {
   width: 100%;
   border-radius: 5px;
 }
+/* ===== Страница фильма ===== */
+
+.movie-page {
+  padding: 20px;
+}
+
+.movie-page h2 {
+  margin-top: 10px;
+}
+
+.movie-page p {
+  opacity: 0.8;
+}
+
+.movie-page iframe {
+  width: 100%;
+  height: 400px;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+.movie-page button {
+  background: #e50914;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
