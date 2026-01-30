@@ -1,17 +1,74 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Просмотр</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Watch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .player-wrapper {
+      max-width: 960px;
+      margin: 20px auto;
+    }
+
+    iframe {
+      width: 100%;
+      height: 540px;
+      border-radius: 12px;
+      border: none;
+      background: #000;
+    }
+
+    .details {
+      max-width: 960px;
+      margin: 20px auto;
+      color: white;
+    }
+
+    .seasons, .episodes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .btn {
+      background: #222;
+      color: white;
+      border: 1px solid #333;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn.active {
+      background: #e50914;
+      border-color: #e50914;
+    }
+  </style>
 </head>
 <body>
 
-<a href="index.html">← Назад</a>
-<div id="player"></div>
-<div id="info"></div>
-<div id="episodes"></div>
+  <div class="player-wrapper">
+    <iframe id="player" allowfullscreen></iframe>
+  </div>
 
-<script src="watch.js"></script>
+  <div class="details">
+    <h2 id="title"></h2>
+    <p id="overview"></p>
+
+    <div id="tvControls" style="display:none;">
+      <h3>Сезоны</h3>
+      <div class="seasons" id="seasons"></div>
+
+      <h3>Серии</h3>
+      <div class="episodes" id="episodes"></div>
+    </div>
+  </div>
+
+  <script src="watch.js"></script>
 </body>
 </html>
+
