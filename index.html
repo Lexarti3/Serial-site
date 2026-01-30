@@ -2,68 +2,122 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open Movies</title>
+  <title>Serial Site</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    header {
+      padding: 16px;
+      background: #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px 0;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+    }
+
+    #auth {
+      max-width: 300px;
+      margin: 40px auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 6px;
+    }
+
+    #content {
+      display: none;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #333;
+      padding: 10px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <h1 class="logo">Open Movies</h1>
+<header>
+  <h2>🎬 Serial Site</h2>
+  <button onclick="logout()">Выйти</button>
+</header>
 
-    <nav class="nav">
-      <button class="nav-btn active" onclick="loadMovies()">Фильмы</button>
-      <button class="nav-btn" onclick="loadTV()">Сериалы</button>
-      <button class="nav-btn" onclick="showFavorites()">⭐ Избранное</button>
-    </nav>
-  </header>
+<div id="auth">
+  <h3>Вход / Регистрация</h3>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
+  <button onclick="register()">Регистрация</button>
+  <button onclick="login()">Вход</button>
+  <p id="userStatus"></p>
+</div>
 
-  <!-- SEARCH -->
-  <div class="search-container">
-    <input
-      type="text"
-      id="search"
-      placeholder="Поиск фильмов и сериалов..."
-      onkeydown="if(event.key==='Enter') search()"
-    />
+<div id="content">
+  <h2>Рекомендации</h2>
+  <div class="grid">
+    <div class="card">Сериал 1</div>
+    <div class="card">Сериал 2</div>
+    <div class="card">Сериал 3</div>
   </div>
+</div>
 
-  <!-- CONTENT -->
-  <main>
-    <div id="grid" class="movies-grid">
-      <!-- Карточки загружаются через JS -->
-    </div>
-  </main>
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>Powered by TMDB</p>
-  </footer>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6Z-zkxFnOKYvfA6efLHLHkOQ6TdmPD5U",
+    authDomain: "moxse-3b0be.firebaseapp.com",
+    projectId: "moxse-3b0be",
+    storageBucket: "moxse-3b0be.firebasestorage.app",
+    messagingSenderId: "33139757396",
+    appId: "1:33139757396:web:431a112d4e82ab044878c1"
+  };
 
-  <!-- 🔥 FIREBASE (ШАГ 2) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+  window.app = initializeApp(firebaseConfig);
+  window.auth = getAuth(app);
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB6Z-zkxFnOKYvfA6efLHLHkOQ6TdmPD5U",
-      authDomain: "moxse-3b0be.firebaseapp.com",
-      projectId: "moxse-3b0be",
-      storageBucket: "moxse-3b0be.firebasestorage.app",
-      messagingSenderId: "33139757396",
-      appId: "1:33139757396:web:431a112d4e82ab044878c1",
-      measurementId: "G-KX0RFFM9W7"
-    };
+  onAuthStateChanged(auth, (user) => {
+    document.getElementById("auth").style.display = user ? "none" : "block";
+    document.getElementById("content").style.display = user ? "block" : "none";
+    document.getElementById("userStatus").innerText =
+      user ? "Вы вошли" : "Вы не авторизованы";
+  });
+</script>
 
-    initializeApp(firebaseConfig);
-  </script>
-
-  <!-- MAIN APP -->
-  <script src="app.js"></script>
+<!-- AUTH LOGIC -->
+<script type="module" src="auth.js"></script>
 
 </body>
 </html>
+
 
 
