@@ -150,4 +150,3 @@ window.addEventListener("scroll", () => {
 
 // ===== СТАРТ =====
 loadFromArchive("movies");
-
