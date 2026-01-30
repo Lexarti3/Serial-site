@@ -66,3 +66,51 @@ function searchMovies(text) {
   );
   renderMovies(filtered);
 }
+async function loadFromArchive() {
+  const res = await fetch(
+    "https://archive.org/advancedsearch.php?q=mediatype:(movies)+AND+licenseurl:*publicdomain*&fl[]=identifier&fl[]=title&fl[]=description&rows=20&page=1&output=json"
+  );
+  const data = await res.json();
+
+  movies.length = 0; // очищаем массив
+
+  data.response.docs.forEach((item, index) => {
+    movies.push({
+      id: index + 1,
+      name: item.title,
+      poster: "https://archive.org/services/img/" + item.identifier,
+      description: item.description || "Public domain movie",
+      video: "https://archive.org/embed/" + item.identifier
+    });
+  });
+
+  renderMovies(movies);
+}
+async function loadFromArchive() {
+  const content = document.getElementById("content");
+
+  // ⬇️ ВОТ СЮДА
+  content.innerHTML = "<p>Загрузка фильмов...</p>";
+
+  const res = await fetch(
+    "https://archive.org/advancedsearch.php?q=mediatype:(movies)&fl[]=identifier,title,description&rows=20&page=1&output=json"
+  );
+
+  const data = await res.json();
+
+  movies.length = 0; // очищаем массив
+
+  data.response.docs.forEach((item, index) => {
+    movies.push({
+      id: index + 1,
+      name: item.title,
+      poster: "https://archive.org/services/img/" + item.identifier,
+      description: item.description || "Public domain movie",
+      video: "https://archive.org/embed/" + item.identifier
+    });
+  });
+
+  renderMovies(movies);
+}
+
+loadFromArchive();
