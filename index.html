@@ -1,37 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Open Movies</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
 <header>
-  <h1 id="site-title">Open Movies</h1>
+  <h1>Open Movies</h1>
 
   <nav>
-    <button onclick="setSection('home')">Главная</button>
-    <button onclick="setSection('movies')">Фильмы</button>
-    <button onclick="setSection('series')">Сериалы</button>
-    <button onclick="toggleLang()">RU / EN</button>
+    <button onclick="loadFromArchive('movies')">Фильмы</button>
+    <button onclick="loadFromArchive('tv')">Сериалы</button>
+    <button onclick="showFavorites()">⭐ Избранное</button>
   </nav>
 
-  <!-- 🔍 ПОИСК -->
   <input
     type="text"
-    placeholder="Поиск по Archive..."
+    placeholder="Поиск по Archive.org..."
     onkeydown="if(event.key==='Enter') archiveSearch(this.value)"
   >
-
-  <!-- 🎬 КАТЕГОРИИ -->
-  <div id="categories">
-    <button onclick="loadFromArchive('animation')">Анимация</button>
-    <button onclick="loadFromArchive('horror')">Хоррор</button>
-    <button onclick="loadFromArchive('comedy')">Комедия</button>
-    <button onclick="loadFromArchive('sci-fi')">Sci-Fi</button>
-  </div>
-
 </header>
 
 <main id="content"></main>
-
-<footer>
-  <p>© Open Movies — Public Domain & Free Content</p>
-</footer>
 
 <script src="script.js"></script>
 </body>
