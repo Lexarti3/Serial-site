@@ -49,7 +49,7 @@ nav button.active {
 
 #grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 15px;
   padding: 20px;
 }
@@ -68,16 +68,19 @@ nav button.active {
   font-size: 14px;
 }
 
+/* MODAL */
 #modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.95);
   display: none;
   flex-direction: column;
+  z-index: 10;
 }
 
 #modal header {
-  font-size: 18px;
+  padding: 15px;
+  font-size: 20px;
 }
 
 #modalContent {
@@ -85,9 +88,14 @@ nav button.active {
   overflow-y: auto;
 }
 
-.episode {
-  padding: 10px;
-  border-bottom: 1px solid #222;
+button.play {
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  background: #e50914;
+  border: none;
+  color: white;
+  font-size: 18px;
   cursor: pointer;
 }
 </style>
@@ -100,7 +108,6 @@ nav button.active {
 <nav>
   <button id="moviesBtn" class="active">Фильмы</button>
   <button id="tvBtn">Сериалы</button>
-  <button id="favBtn">⭐ Избранное</button>
 </nav>
 
 <input id="search" placeholder="Поиск фильмов и сериалов...">
@@ -118,7 +125,6 @@ const KEY = "326dbfdc8731edbdf825d569a44d4ede";
 const IMG = "https://image.tmdb.org/t/p/w500";
 
 let mode = "movie";
-let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
 
 const grid = document.getElementById("grid");
 const modal = document.getElementById("modal");
@@ -134,64 +140,44 @@ async function loadPopular() {
 function render(items) {
   grid.innerHTML = "";
   items.forEach(i => {
+    if (!i.poster_path) return;
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <img src="${i.poster_path ? IMG+i.poster_path : ""}">
+      <img src="${IMG + i.poster_path}">
       <h4>${i.title || i.name}</h4>
     `;
-    card.onclick = () => openDetails(i.id);
+    card.onclick = () => openDetails(i);
     grid.appendChild(card);
   });
 }
 
-async function openDetails(id) {
-  if (mode === "movie") {
-    play(`${API}/movie/${id}?api_key=${KEY}`);
-    return;
-  }
-
-  const res = await fetch(`${API}/tv/${id}?api_key=${KEY}&language=ru-RU`);
-  const tv = await res.json();
-
+function openDetails(item) {
   modal.style.display = "flex";
-  modalTitle.innerText = tv.name;
-  modalContent.innerHTML = "";
+  modalTitle.innerText = item.title || item.name;
 
-  tv.seasons.forEach(s => {
-    const div = document.createElement("div");
-    div.className = "episode";
-    div.innerText = `Сезон ${s.season_number}`;
-    div.onclick = () => loadSeason(id, s.season_number);
-    modalContent.appendChild(div);
-  });
+  modalContent.innerHTML = `
+    <img src="${IMG + item.poster_path}" style="width:200px;border-radius:12px">
+    <p>${item.overview || "Описание отсутствует"}</p>
+    <button class="play" onclick="openPlayer('${item.title || item.name}')">
+      ▶️ Смотреть
+    </button>
+  `;
 }
 
-async function loadSeason(tvId, season) {
-  const res = await fetch(`${API}/tv/${tvId}/season/${season}?api_key=${KEY}&language=ru-RU`);
-  const data = await res.json();
-
-  modalContent.innerHTML = "";
-  data.episodes.forEach(e => {
-    const div = document.createElement("div");
-    div.className = "episode";
-    div.innerText = `Серия ${e.episode_number}: ${e.name}`;
-    div.onclick = () => play(e.name);
-    modalContent.appendChild(div);
-  });
-}
-
-function play(title) {
-  modal.style.display = "flex";
-  modalTitle.innerText = title;
+window.openPlayer = (title) => {
   modalContent.innerHTML = `
     <iframe 
       src="https://archive.org/embed/${encodeURIComponent(title)}"
       width="100%" height="500"
-      frameborder="0" allowfullscreen>
+      frameborder="0"
+      allowfullscreen>
     </iframe>
+    <p style="opacity:.6">
+      Если видео не найдено — значит его нет на archive.org
+    </p>
   `;
-}
+};
 
 document.getElementById("moviesBtn").onclick = () => {
   mode = "movie";
@@ -203,11 +189,6 @@ document.getElementById("tvBtn").onclick = () => {
   mode = "tv";
   setActive(1);
   loadPopular();
-};
-
-document.getElementById("favBtn").onclick = () => {
-  setActive(2);
-  render(favorites);
 };
 
 function setActive(i) {
@@ -231,5 +212,6 @@ loadPopular();
 
 </body>
 </html>
+
 
 
