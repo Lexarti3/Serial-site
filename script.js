@@ -3,21 +3,22 @@ const content = document.getElementById("content");
 
 // ================== STATE ==================
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-const cache = {}; // кеш запросов archive.org
+const cache = {};
 
 // ================== КЛЮЧЕВЫЕ СЛОВА ==================
 const BLOCK = [
   "news","cnn","nbc","bbc","radio","podcast",
   "preview","award","talk","interview",
-  "show","daily","session","reality","question"
+  "show","daily","session","reality","question",
+  "top 10","top ten","recap","review","countdown",
+  "list of","best of","episode","ep."
 ];
 
 const ALLOW = [
-  "film","movie","feature","full movie",
-  "full film","series","season","episode"
+  "film","movie","feature","full film","full movie"
 ];
 
-// ================== ЖАНРЫ (без API) ==================
+// ================== ЖАНРЫ ==================
 const GENRES = {
   horror: ["horror","terror","ghost","night"],
   scifi: ["sci-fi","science","space","alien","future"],
@@ -34,26 +35,40 @@ function detectGenre(item) {
   return "other";
 }
 
-// ================== СКОРИНГ (Netflix-style) ==================
+// ================== PRE-FILTER (КЛЮЧЕВОЕ) ==================
+function isProbablyMovie(item) {
+  const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
+
+  // ❌ явный мусор
+  if (BLOCK.some(w => text.includes(w))) return false;
+
+  // ❌ короткие / пустые описания
+  if (!item.description || item.description.length < 80) return false;
+
+  // ✅ год почти обязателен
+  if (!text.match(/\b(19|20)\d{2}\b/)) return false;
+
+  return true;
+}
+
+// ================== СКОРИНГ ==================
 function scoreItem(item) {
   const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
   let score = 0;
 
-  BLOCK.forEach(w => text.includes(w) && (score -= 5));
   ALLOW.forEach(w => text.includes(w) && (score += 4));
 
   if (text.match(/\b(19|20)\d{2}\b/)) score += 2;
   if (text.includes("director")) score += 2;
   if (text.includes("runtime") || text.includes("minutes")) score += 1;
-  if (item.description && item.description.length > 120) score += 1;
-  if (!item.description) score -= 1;
+  if (item.description.length > 200) score += 1;
 
   if (favorites.includes(item.identifier)) score += 3;
 
   return score;
 }
 
-// ================== ЗАГРУЗКА ARCHIVE ==================
+// ================== FETCH ARCHIVE ==================
 async function fetchArchive(query) {
   content.innerHTML = "<p class='loading'>Загрузка…</p>";
 
@@ -66,28 +81,28 @@ async function fetchArchive(query) {
     "https://archive.org/advancedsearch.php" +
     "?q=" + encodeURIComponent(query) +
     "&fl[]=identifier&fl[]=title&fl[]=description" +
-    "&rows=80&output=json";
+    "&rows=100&output=json";
 
   const res = await fetch(url);
   const data = await res.json();
 
-  const ranked = data.response.docs
+  const movies = data.response.docs
+    .filter(isProbablyMovie)
     .map(item => ({
       ...item,
       genre: detectGenre(item),
       score: scoreItem(item)
     }))
-    .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  cache[query] = ranked;
-  render(ranked);
+  cache[query] = movies;
+  render(movies);
 }
 
-// ================== РЕНДЕР КАРТОЧЕК ==================
+// ================== RENDER ==================
 function render(list) {
   if (!list.length) {
-    content.innerHTML = "<p class='loading'>Ничего не найдено 😕</p>";
+    content.innerHTML = "<p class='loading'>Фильмы не найдены 😕</p>";
     return;
   }
 
@@ -97,7 +112,7 @@ function render(list) {
   list.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-    if (item.score >= 7) card.classList.add("top-pick");
+    if (item.score >= 8) card.classList.add("top-pick");
 
     card.innerHTML = `
       <img loading="lazy"
@@ -121,7 +136,7 @@ function render(list) {
   });
 }
 
-// ================== ЛУЧШИЙ ВИДЕОФАЙЛ ==================
+// ================== BEST VIDEO ==================
 async function getBestVideo(identifier) {
   const res = await fetch(`https://archive.org/metadata/${identifier}`);
   const data = await res.json();
@@ -135,7 +150,7 @@ async function getBestVideo(identifier) {
   );
 }
 
-// ================== ПЛЕЕР ==================
+// ================== PLAYER ==================
 async function openMovie(item) {
   content.innerHTML = "<p class='loading'>Загрузка фильма…</p>";
 
@@ -158,53 +173,9 @@ async function openMovie(item) {
       </video>
     </div>
   `;
-
-  renderRecommendations(item);
 }
 
-// ================== ПОХОЖИЕ ФИЛЬМЫ ==================
-function similarity(a, b) {
-  const ta = `${a.title} ${a.description}`.toLowerCase().split(/\W+/);
-  const tb = `${b.title} ${b.description}`.toLowerCase().split(/\W+/);
-
-  const setA = new Set(ta);
-  const setB = new Set(tb);
-
-  let common = 0;
-  setA.forEach(w => setB.has(w) && common++);
-  return common;
-}
-
-function renderRecommendations(baseItem) {
-  const all = Object.values(cache).flat();
-
-  const similar = all
-    .filter(i => i.identifier !== baseItem.identifier)
-    .map(i => ({ ...i, sim: similarity(baseItem, i) }))
-    .sort((a, b) => b.sim - a.sim)
-    .slice(0, 6);
-
-  if (!similar.length) return;
-
-  const block = document.createElement("div");
-  block.innerHTML = "<h3>Похожие фильмы</h3>";
-  block.className = "grid";
-
-  similar.forEach(item => {
-    const c = document.createElement("div");
-    c.className = "card";
-    c.innerHTML = `
-      <img src="https://archive.org/services/img/${item.identifier}">
-      <h4>${item.title}</h4>
-    `;
-    c.onclick = () => openMovie(item);
-    block.appendChild(c);
-  });
-
-  content.appendChild(block);
-}
-
-// ================== ИЗБРАННОЕ ==================
+// ================== FAVORITES ==================
 function toggleFav(id) {
   favorites = favorites.includes(id)
     ? favorites.filter(f => f !== id)
@@ -226,26 +197,29 @@ function showFavorites() {
   render(items);
 }
 
-// ================== НАВИГАЦИЯ ==================
+// ================== NAV ==================
 function loadMovies() {
-  fetchArchive("feature film");
+  fetchArchive("mediatype:movies AND (film OR movie)");
 }
 
 function loadSeries() {
-  fetchArchive("tv series full episodes");
+  fetchArchive("mediatype:movies AND (series OR episode)");
 }
 
-// ================== ПОИСК (debounce) ==================
+// ================== SEARCH ==================
 let searchTimer;
 function archiveSearch(text) {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    if (text.trim()) fetchArchive(text);
+    if (text.trim()) {
+      fetchArchive(`mediatype:movies AND (${text})`);
+    }
   }, 400);
 }
 
-// ================== СТАРТ ==================
+// ================== START ==================
 loadMovies();
+
 
 
 
