@@ -1,17 +1,11 @@
 const KEY = "326dbfdc8731edbdf825d569a44d4ede";
 const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p/w500";
-const grid = document.getElementById("movies");
+const grid = document.getElementById("grid");
 
-// ===== STORAGE =====
-function save(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-function load(key) {
-  return JSON.parse(localStorage.getItem(key) || "[]");
-}
+const save = (k, d) => localStorage.setItem(k, JSON.stringify(d));
+const load = k => JSON.parse(localStorage.getItem(k) || "[]");
 
-// ===== LOADERS =====
 async function loadMovies() {
   const r = await fetch(`${API}/movie/popular?api_key=${KEY}&language=ru-RU`);
   const d = await r.json();
@@ -25,15 +19,13 @@ async function loadTV() {
 }
 
 async function search() {
-  const q = document.getElementById("searchInput").value;
+  const q = searchInput.value.trim();
   if (!q) return;
-
   const r = await fetch(`${API}/search/multi?api_key=${KEY}&query=${q}&language=ru-RU`);
   const d = await r.json();
-  render(d.results.filter(x => x.media_type !== "person"), null);
+  render(d.results.filter(x => x.media_type !== "person"));
 }
 
-// ===== RENDER =====
 function render(items, forcedType) {
   grid.innerHTML = "";
   items.forEach(i => {
@@ -47,19 +39,18 @@ function render(items, forcedType) {
       <img src="${IMG + i.poster_path}">
       <h3>${title}</h3>
     `;
-    card.onclick = () => openWatch(i, type);
+    card.onclick = () => {
+      location.href = `watch.html?id=${i.id}&type=${type}`;
+    };
     grid.appendChild(card);
   });
 }
 
-// ===== WATCH =====
-function openWatch(item, type) {
-  let history = load("history");
-  history.unshift({ id: item.id, type, date: Date.now() });
-  save("history", history.slice(0, 50));
-  location.href = `watch.html?id=${item.id}&type=${type}`;
+function showFavorites() {
+  render(load("favorites"));
 }
 
-// ===== START =====
-document.addEventListener("DOMContentLoaded", loadMovies);
+searchInput.addEventListener("input", search);
+loadMovies();
+
 
