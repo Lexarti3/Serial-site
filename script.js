@@ -1,18 +1,6 @@
-const movies = [
-  {
-    id: 1,
-    name: "Big Buck Bunny",
-    poster: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-    description: "Открытый мультфильм Blender.",
-    video: "https://archive.org/embed/BigBuckBunny"
-  },
-  {
-    id: 2,
-    name: "Sintel",
-    poster: "https://upload.wikimedia.org/wikipedia/commons/1/14/Sintel_poster.jpg",
-    description: "Фэнтези короткометражка.",
-    video: "https://archive.org/embed/Sintel"
-  }
+let currentPage = 1;
+const perPage = 12;
+let currentQuery = "movies";
 ];
 
 // ===== РЕНДЕР КАРТОЧЕК =====
@@ -113,4 +101,65 @@ async function loadFromArchive() {
   renderMovies(movies);
 }
 
-loadFromArchive();
+async function loadFromArchive(query = "movies", page = 1) {
+  const content = document.getElementById("content");
+
+  // 1️⃣ Показываем загрузку
+  content.innerHTML = "<p>Загрузка фильмов...</p>";
+
+  // 2️⃣ Запоминаем состояние
+  currentQuery = query;
+  currentPage = page;
+
+  // 3️⃣ Считаем с какого фильма грузить
+  const start = (page - 1) * perPage;
+
+  // 4️⃣ Формируем URL запроса
+  const url =
+    "https://archive.org/advancedsearch.php" +
+    "?q=mediatype:(movies)%20AND%20" + query +
+    "&fl[]=identifier" +
+    "&fl[]=title" +
+    "&fl[]=description" +
+    "&rows=" + perPage +
+    "&start=" + start +
+    "&output=json";
+
+  // 5️⃣ Запрос к Archive
+  const res = await fetch(url);
+  const data = await res.json();
+
+  // 6️⃣ Очищаем список фильмов
+  movies = [];
+
+  // 7️⃣ Заполняем новыми данными
+  data.response.docs.forEach((item, index) => {
+    movies.push({
+      id: index + 1,
+      name: item.title,
+      poster: "https://archive.org/services/img/" + item.identifier,
+      description: item.description || "Public domain movie",
+      video: "https://archive.org/embed/" + item.identifier
+    });
+  });
+
+  // 8️⃣ Рендер
+  renderMovies(movies);
+  renderPagination();
+}
+
+
+  pagination.innerHTML += `<span>Страница ${currentPage}</span>`;
+
+  pagination.innerHTML += `
+    <button onclick="loadFromArchive('${currentQuery}', ${currentPage + 1})">
+      Вперёд →
+    </button>
+  `;
+
+  content.appendChild(pagination);
+}
+function archiveSearch(text) {
+  if (!text.trim()) return;   // если пусто — ничего не делаем
+  loadFromArchive(text, 1);   // загружаем с Archive
+}
