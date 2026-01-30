@@ -12,61 +12,61 @@ body {
 header {
   position: sticky;
   top: 0;
-  background: #121212;
-  padding: 10px;
+  background: linear-gradient(#000, #111);
+  padding: 12px;
   z-index: 10;
-}
-
-h1 {
-  margin: 0 0 10px;
 }
 
 nav button {
   background: none;
   border: none;
   color: #fff;
-  margin-right: 10px;
+  margin-right: 12px;
   font-size: 16px;
   cursor: pointer;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
   border: none;
+  background: #1c1c1c;
+  color: #fff;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
-  padding: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  padding: 14px;
 }
 
 .card {
-  background: #1c1c1c;
-  border-radius: 12px;
+  background: #1b1b1b;
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  transition: transform 0.2s ease;
+  transition: transform .2s;
 }
 
 .card:hover {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .card img {
   width: 100%;
-  height: 220px;
+  height: 230px;
   object-fit: cover;
+  background: #000;
 }
 
 .card h3 {
   font-size: 14px;
-  padding: 8px;
+  padding: 10px;
+  margin: 0;
 }
 
 .fav-btn {
@@ -80,14 +80,17 @@ input {
   cursor: pointer;
 }
 
+/* ===== Страница просмотра ===== */
+
 .movie-page {
-  padding: 12px;
+  padding: 16px;
 }
 
 .movie-page iframe {
   width: 100%;
-  height: 400px;
-  border-radius: 12px;
+  height: 420px;
+  border-radius: 14px;
+  margin-top: 14px;
 }
 
 .movie-page button {
@@ -95,9 +98,8 @@ input {
   color: #fff;
   border: none;
   padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 15px;
-  border-radius: 6px;
 }
 
 .loading {
@@ -105,3 +107,4 @@ input {
   text-align: center;
   opacity: 0.7;
 }
+
