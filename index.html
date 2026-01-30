@@ -2,40 +2,44 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Open Movies</title>
 
 <style>
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0b0b0b;
+  background: #0d0d0d;
   color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
 header {
   padding: 20px;
-  font-size: 26px;
-  font-weight: 700;
 }
+
+h1 {
+  margin: 0 0 10px;
+}
+
 nav {
   display: flex;
   gap: 20px;
-  padding: 0 20px 10px;
+  margin-bottom: 10px;
 }
+
 nav button {
   background: none;
   border: none;
   color: #aaa;
   font-size: 16px;
-  cursor: pointer;
 }
+
 nav button.active {
   color: #fff;
+  font-weight: 600;
 }
-.search {
-  padding: 0 20px 20px;
-}
-.search input {
+
+input {
   width: 100%;
   padding: 12px;
   border-radius: 12px;
@@ -43,51 +47,33 @@ nav button.active {
   background: #1a1a1a;
   color: #fff;
 }
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
   padding: 20px;
 }
+
 .card {
   position: relative;
-  cursor: pointer;
 }
+
 .card img {
   width: 100%;
-  border-radius: 14px;
+  border-radius: 12px;
 }
+
 .card h3 {
-  font-size: 14px;
+  font-size: 13px;
   margin: 6px 0 0;
 }
-.card .year {
-  font-size: 12px;
-  color: #aaa;
-}
+
 .fav {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   font-size: 20px;
-  color: gold;
-}
-.player {
-  padding: 20px;
-}
-.player iframe {
-  width: 100%;
-  height: 56vw;
-  max-height: 70vh;
-  border-radius: 12px;
-  border: none;
-}
-.back {
-  margin-bottom: 10px;
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 16px;
   cursor: pointer;
 }
 </style>
@@ -95,157 +81,109 @@ nav button.active {
 
 <body>
 
-<header>Open Movies</header>
+<header>
+  <h1>Open Movies</h1>
 
-<nav>
-  <button id="btn-movies" class="active">Фильмы</button>
-  <button id="btn-series">Сериалы</button>
-  <button id="btn-fav">⭐ Избранное</button>
-</nav>
+  <nav>
+    <button id="moviesBtn" class="active">Фильмы</button>
+    <button id="favBtn">⭐ Избранное</button>
+  </nav>
 
-<div class="search">
-  <input id="search" placeholder="Поиск фильмов и сериалов…" />
-</div>
+  <input id="search" placeholder="Поиск фильмов..." />
+</header>
 
-<div id="content"></div>
+<div id="content" class="grid"></div>
 
 <script>
-/* ================= НАСТРОЙКИ ================= */
-
-const TMDB_KEY = "326dbfdc8731edbdf825d569a44d4ede";
-const TMDB = "https://api.themoviedb.org/3";
+const API_KEY = "326dbfdc8731edbdf825d569a44d4ede";
+const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p/w500";
 
-let mode = "movie";
+const content = document.getElementById("content");
+const search = document.getElementById("search");
+const moviesBtn = document.getElementById("moviesBtn");
+const favBtn = document.getElementById("favBtn");
+
 let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
 
-/* ================= ЗАГРУЗКА ================= */
-
-async function loadPopular() {
-  const url = `${TMDB}/${mode}/popular?api_key=${TMDB_KEY}&language=ru`;
-  const r = await fetch(url);
-  const d = await r.json();
-  render(d.results);
+async function fetchMovies(url) {
+  content.innerHTML = "";
+  const res = await fetch(url);
+  const data = await res.json();
+  render(data.results || []);
 }
-
-async function searchTMDB(q) {
-  if (!q) return loadPopular();
-  const url = `${TMDB}/search/${mode}?api_key=${TMDB_KEY}&language=ru&query=${encodeURIComponent(q)}`;
-  const r = await fetch(url);
-  const d = await r.json();
-  render(d.results);
-}
-
-/* ================= РЕНДЕР ================= */
 
 function render(list) {
-  const c = document.getElementById("content");
-  c.innerHTML = `<div class="grid"></div>`;
-  const g = c.querySelector(".grid");
+  if (!list.length) {
+    content.innerHTML = "<p>Ничего не найдено</p>";
+    return;
+  }
 
-  list.forEach(item => {
-    if (!item.poster_path) return;
-
+  content.innerHTML = "";
+  list.forEach(m => {
     const card = document.createElement("div");
     card.className = "card";
 
-    const title = item.title || item.name;
-    const year = (item.release_date || item.first_air_date || "").slice(0,4);
-
     card.innerHTML = `
-      <img src="${IMG + item.poster_path}" />
-      <h3>${title}</h3>
-      <div class="year">${year}</div>
-      <div class="fav">${favorites.includes(item.id) ? "★" : "☆"}</div>
+      <span class="fav">${favorites.includes(m.id) ? "★" : "☆"}</span>
+      <img src="${m.poster_path ? IMG + m.poster_path : ""}">
+      <h3>${m.title}</h3>
     `;
 
     card.querySelector(".fav").onclick = e => {
       e.stopPropagation();
-      toggleFav(item.id);
-      e.target.textContent = favorites.includes(item.id) ? "★" : "☆";
+      toggleFav(m.id);
+      e.target.textContent = favorites.includes(m.id) ? "★" : "☆";
     };
 
-    card.onclick = () => openMovie(item);
-    g.appendChild(card);
+    content.appendChild(card);
   });
 }
 
-/* ================= ПЛЕЕР ================= */
-
-async function openMovie(item) {
-  const title = item.title || item.name;
-  const year = (item.release_date || item.first_air_date || "").slice(0,4);
-
-  const q = `${title} ${year}`;
-  const url =
-    "https://archive.org/advancedsearch.php" +
-    "?q=" + encodeURIComponent(q) +
-    "&fl[]=identifier&rows=1&output=json";
-
-  let embed = "<p>Видео не найдено в archive.org</p>";
-
-  try {
-    const r = await fetch(url);
-    const d = await r.json();
-    if (d.response.docs[0]) {
-      embed = `<iframe src="https://archive.org/embed/${d.response.docs[0].identifier}" allowfullscreen></iframe>`;
-    }
-  } catch {}
-
-  const c = document.getElementById("content");
-  c.innerHTML = `
-    <div class="player">
-      <button class="back" onclick="loadPopular()">← Назад</button>
-      <h2>${title}</h2>
-      ${embed}
-    </div>
-  `;
-}
-
-/* ================= ИЗБРАННОЕ ================= */
-
 function toggleFav(id) {
   favorites = favorites.includes(id)
-    ? favorites.filter(x => x !== id)
+    ? favorites.filter(f => f !== id)
     : [...favorites, id];
+
   localStorage.setItem("fav", JSON.stringify(favorites));
 }
 
-async function showFav() {
-  if (!favorites.length) {
-    content.innerHTML = "<p style='padding:20px'>Избранное пусто ⭐</p>";
-    return;
-  }
+function loadPopular() {
+  moviesBtn.classList.add("active");
+  favBtn.classList.remove("active");
 
-  const items = [];
-  for (const id of favorites) {
-    const r = await fetch(`${TMDB}/movie/${id}?api_key=${TMDB_KEY}&language=ru`);
-    if (r.ok) items.push(await r.json());
-  }
-  render(items);
+  fetchMovies(
+    `${API}/movie/popular?api_key=${API_KEY}&language=ru-RU`
+  );
 }
 
-/* ================= UI ================= */
+function showFavorites() {
+  moviesBtn.classList.remove("active");
+  favBtn.classList.add("active");
 
-btn-movies.onclick = () => {
-  mode = "movie";
-  btn-movies.classList.add("active");
-  btn-series.classList.remove("active");
-  loadPopular();
+  fetchMovies(
+    `${API}/movie/popular?api_key=${API_KEY}&language=ru-RU`
+  ).then(() => {
+    const cards = [...document.querySelectorAll(".card")];
+    cards.forEach((c, i) => {
+      if (!favorites.includes(
+        JSON.parse(localStorage.getItem("last") || "[]")[i]
+      )) c.remove();
+    });
+  });
+}
+
+search.oninput = e => {
+  if (!e.target.value) return loadPopular();
+  fetchMovies(
+    `${API}/search/movie?api_key=${API_KEY}&language=ru-RU&query=${encodeURIComponent(e.target.value)}`
+  );
 };
 
-btn-series.onclick = () => {
-  mode = "tv";
-  btn-series.classList.add("active");
-  btn-movies.classList.remove("active");
-  loadPopular();
-};
+moviesBtn.onclick = loadPopular;
+favBtn.onclick = showFavorites;
 
-btn-fav.onclick = showFav;
-search.oninput = e => searchTMDB(e.target.value);
-
-/* ================= СТАРТ ================= */
-
+// 🔥 СТАРТ
 loadPopular();
 </script>
 
